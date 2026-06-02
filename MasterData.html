@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Master Data - SIRT</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <?!= include('Styles') ?>
+  <script>var CURRENT_PAGE = 'MasterData';</script>
+  <style>
+    .main-content {
+      margin-left: 250px;
+      min-height: 100vh;
+      background-color: #f8fafc;
+    }
+    @media (max-width: 768px) {
+      .main-content { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+  <?!= include('Layout') ?>
+  
+  <div class="main-content">
+    <div class="container-fluid p-4">
+      <!-- Page Header -->
+      <div class="mb-4">
+        <h4 class="mb-1">Master Data</h4>
+        <p class="text-muted small mb-0">Kelola data Dawis, Rumah, KK, dan Warga</p>
+      </div>
+      
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" id="masterDataTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="dawis-tab" data-bs-toggle="tab" data-bs-target="#dawis" type="button">Dawis</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="rumah-tab" data-bs-toggle="tab" data-bs-target="#rumah" type="button">Rumah</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="kk-tab" data-bs-toggle="tab" data-bs-target="#kk" type="button">Kartu Keluarga</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="warga-tab" data-bs-toggle="tab" data-bs-target="#warga" type="button">Warga</button>
+        </li>
+      </ul>
+      
+      <div class="tab-content bg-white border border-top-0 rounded-bottom" id="masterDataTabContent">
+        <!-- DAWIS TAB -->
+        <div class="tab-pane fade show active p-3" id="dawis" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Data Dawis</h6>
+            <button class="btn btn-primary btn-sm" onclick="showDawisModal()">
+              <i class="bi bi-plus-lg me-1"></i> Tambah Dawis
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th width="50">No</th>
+                  <th>Nama Dawis</th>
+                  <th>Ketua Dawis</th>
+                  <th>RT/RW</th>
+                  <th>Jumlah Rumah</th>
+                  <th width="100">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="dawisTableBody">
+                <tr><td colspan="6" class="text-center py-3">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- RUMAH TAB -->
+        <div class="tab-pane fade p-3" id="rumah" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Data Rumah</h6>
+            <button class="btn btn-primary btn-sm" onclick="showRumahModal()">
+              <i class="bi bi-plus-lg me-1"></i> Tambah Rumah
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th width="50">No</th>
+                  <th>Blok/Nomor</th>
+                  <th>Dawis</th>
+                  <th>Status</th>
+                  <th>Jumlah KK</th>
+                  <th width="100">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="rumahTableBody">
+                <tr><td colspan="6" class="text-center py-3">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- KK TAB -->
+        <div class="tab-pane fade p-3" id="kk" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Data Kartu Keluarga</h6>
+            <button class="btn btn-primary btn-sm" onclick="showKKModal()">
+              <i class="bi bi-plus-lg me-1"></i> Tambah KK
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th width="50">No</th>
+                  <th>No. KK</th>
+                  <th>Kepala Keluarga</th>
+                  <th>Alamat</th>
+                  <th>Jumlah Warga</th>
+                  <th width="100">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="kkTableBody">
+                <tr><td colspan="6" class="text-center py-3">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- WARGA TAB -->
+        <div class="tab-pane fade p-3" id="warga" role="tabpanel">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Data Warga</h6>
+            <div class="d-flex gap-2">
+              <input type="text" id="wargaSearch" class="form-control form-control-sm" placeholder="Cari nama/NIK..." style="width: 200px;">
+              <button class="btn btn-primary btn-sm" onclick="showWargaModal()">
+                <i class="bi bi-plus-lg me-1"></i> Tambah Warga
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover table-sm">
+              <thead class="table-light">
+                <tr>
+                  <th width="50">No</th>
+                  <th>NIK</th>
+                  <th>Nama</th>
+                  <th>L/P</th>
+                  <th>No. KK</th>
+                  <th>Status</th>
+                  <th width="100">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="wargaTableBody">
+                <tr><td colspan="7" class="text-center py-3">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- DAWIS MODAL -->
+  <div class="modal fade" id="dawisModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="dawisModalTitle">Tambah Dawis</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="dawisForm">
+            <input type="hidden" id="dawis_id">
+            <div class="mb-3">
+              <label class="form-label">Nama Dawis <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="nama_dawis" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Ketua Dawis</label>
+              <input type="text" class="form-control" id="ketua_dawis">
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label">RT</label>
+                <input type="text" class="form-control" id="dawis_rt">
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label">RW</label>
+                <input type="text" class="form-control" id="dawis_rw">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Keterangan</label>
+              <textarea class="form-control" id="dawis_keterangan" rows="2"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="saveDawis()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- RUMAH MODAL -->
+  <div class="modal fade" id="rumahModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rumahModalTitle">Tambah Rumah</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="rumahForm">
+            <input type="hidden" id="rumah_id">
+            <div class="mb-3">
+              <label class="form-label">Dawis <span class="text-danger">*</span></label>
+              <select class="form-select" id="rumah_dawis_id" required>
+                <option value="">Pilih Dawis</option>
+              </select>
+            </div>
+            <div class="row">
+              <div class="col-6 mb-3">
+                <label class="form-label">Blok <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="rumah_blok" required>
+              </div>
+              <div class="col-6 mb-3">
+                <label class="form-label">Nomor <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="rumah_nomor" required>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Alamat Lengkap</label>
+              <textarea class="form-control" id="rumah_alamat" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Status Rumah</label>
+              <select class="form-select" id="rumah_status">
+                <option value="dihuni">Dihuni</option>
+                <option value="kosong">Kosong</option>
+                <option value="disewakan">Disewakan</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="saveRumah()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- KK MODAL -->
+  <div class="modal fade" id="kkModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="kkModalTitle">Tambah Kartu Keluarga</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="kkForm">
+            <input type="hidden" id="kk_id">
+            <div class="mb-3">
+              <label class="form-label">Rumah <span class="text-danger">*</span></label>
+              <select class="form-select" id="kk_rumah_id" required>
+                <option value="">Pilih Rumah</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">No. KK <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="no_kk" maxlength="16" required>
+              <small class="text-muted">16 digit angka</small>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Kepala Keluarga</label>
+              <input type="text" class="form-control" id="kepala_keluarga">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Status Tinggal</label>
+              <select class="form-select" id="kk_status_tinggal">
+                <option value="tetap">Tetap</option>
+                <option value="kontrak">Kontrak</option>
+                <option value="kos">Kos</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="saveKK()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- WARGA MODAL -->
+  <div class="modal fade" id="wargaModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="wargaModalTitle">Tambah Warga</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="wargaForm">
+            <input type="hidden" id="warga_id">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">KK <span class="text-danger">*</span></label>
+                <select class="form-select" id="warga_kk_id" required>
+                  <option value="">Pilih KK</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">NIK <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="warga_nik" maxlength="16" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="warga_nama" required>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Jenis Kelamin</label>
+                <select class="form-select" id="warga_jenis_kelamin">
+                  <option value="L">Laki-laki</option>
+                  <option value="P">Perempuan</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Tempat Lahir</label>
+                <input type="text" class="form-control" id="warga_tempat_lahir">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Tanggal Lahir</label>
+                <input type="date" class="form-control" id="warga_tanggal_lahir">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Agama</label>
+                <select class="form-select" id="warga_agama">
+                  <option value="Islam">Islam</option>
+                  <option value="Kristen">Kristen</option>
+                  <option value="Katolik">Katolik</option>
+                  <option value="Hindu">Hindu</option>
+                  <option value="Buddha">Buddha</option>
+                  <option value="Konghucu">Konghucu</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Status Perkawinan</label>
+                <select class="form-select" id="warga_status_perkawinan">
+                  <option value="Belum Kawin">Belum Kawin</option>
+                  <option value="Kawin">Kawin</option>
+                  <option value="Cerai Hidup">Cerai Hidup</option>
+                  <option value="Cerai Mati">Cerai Mati</option>
+                </select>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Pekerjaan</label>
+                <input type="text" class="form-control" id="warga_pekerjaan">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">No. Telepon</label>
+                <input type="text" class="form-control" id="warga_no_telepon">
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Status dalam KK</label>
+                <select class="form-select" id="warga_status_dalam_kk">
+                  <option value="Kepala Keluarga">Kepala Keluarga</option>
+                  <option value="Istri">Istri</option>
+                  <option value="Anak">Anak</option>
+                  <option value="Anggota Keluarga">Anggota Keluarga</option>
+                </select>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Status Warga</label>
+                <select class="form-select" id="warga_status_warga">
+                  <option value="tetap">Tetap</option>
+                  <option value="kontrak">Kontrak</option>
+                  <option value="kos">Kos</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="saveWarga()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <?!= include('Scripts') ?>
+  
+  <script>
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('[v0] MasterData page loaded');
+      loadDawisList();
+      
+      // Search functionality
+      document.getElementById('wargaSearch').addEventListener('input', function(e) {
+        var query = e.target.value;
+        if (query.length >= 3) {
+          searchWargaData(query);
+        } else if (query.length === 0) {
+          loadWargaList();
+        }
+      });
+      
+      // Tab change event
+      document.querySelectorAll('#masterDataTabs button').forEach(function(tab) {
+        tab.addEventListener('shown.bs.tab', function(e) {
+          var target = e.target.getAttribute('data-bs-target');
+          console.log('[v0] Tab changed to:', target);
+          if (target === '#dawis') loadDawisList();
+          else if (target === '#rumah') loadRumahList();
+          else if (target === '#kk') loadKKList();
+          else if (target === '#warga') loadWargaList();
+        });
+      });
+    });
+    
+    // ===========================================
+    // DAWIS FUNCTIONS
+    // ===========================================
+    function loadDawisList() {
+      console.log('[v0] Loading Dawis list...');
+      google.script.run.withSuccessHandler(function(result) {
+        console.log('[v0] Dawis result:', result);
+        var tbody = document.getElementById('dawisTableBody');
+        if (result.success && result.data && result.data.length > 0) {
+          tbody.innerHTML = result.data.map(function(d, i) {
+            return '<tr>' +
+              '<td>' + (i + 1) + '</td>' +
+              '<td>' + d.nama_dawis + '</td>' +
+              '<td>' + (d.ketua_dawis || '-') + '</td>' +
+              '<td>' + (d.rt || '-') + '/' + (d.rw || '-') + '</td>' +
+              '<td>' + (d.jumlah_rumah || 0) + '</td>' +
+              '<td>' +
+                '<button class="btn btn-sm btn-outline-primary me-1" onclick="editDawis(\'' + d.dawis_id + '\')"><i class="bi bi-pencil"></i></button>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="deleteDawisData(\'' + d.dawis_id + '\')"><i class="bi bi-trash"></i></button>' +
+              '</td>' +
+            '</tr>';
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">Tidak ada data</td></tr>';
+        }
+      }).withFailureHandler(function(error) {
+        console.log('[v0] Dawis error:', error);
+        document.getElementById('dawisTableBody').innerHTML = '<tr><td colspan="6" class="text-center py-3 text-danger">Error: ' + error + '</td></tr>';
+      }).getDawisList();
+    }
+    
+    function showDawisModal(data) {
+      console.log('[v0] showDawisModal called', data);
+      document.getElementById('dawisForm').reset();
+      document.getElementById('dawis_id').value = data ? data.dawis_id : '';
+      document.getElementById('dawisModalTitle').textContent = data ? 'Edit Dawis' : 'Tambah Dawis';
+      
+      if (data) {
+        document.getElementById('nama_dawis').value = data.nama_dawis || '';
+        document.getElementById('ketua_dawis').value = data.ketua_dawis || '';
+        document.getElementById('dawis_rt').value = data.rt || '';
+        document.getElementById('dawis_rw').value = data.rw || '';
+        document.getElementById('dawis_keterangan').value = data.keterangan || '';
+      }
+      
+      var modal = new bootstrap.Modal(document.getElementById('dawisModal'));
+      modal.show();
+    }
+    
+    function editDawis(dawisId) {
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          showDawisModal(result.data);
+        } else {
+          alert(result.message);
+        }
+      }).getDawisById(dawisId);
+    }
+    
+    function saveDawis() {
+      var dawisId = document.getElementById('dawis_id').value;
+      var data = {
+        nama_dawis: document.getElementById('nama_dawis').value,
+        ketua_dawis: document.getElementById('ketua_dawis').value,
+        rt: document.getElementById('dawis_rt').value,
+        rw: document.getElementById('dawis_rw').value,
+        keterangan: document.getElementById('dawis_keterangan').value
+      };
+      
+      console.log('[v0] Saving Dawis:', data);
+      
+      var callback = function(result) {
+        console.log('[v0] Save result:', result);
+        if (result.success) {
+          bootstrap.Modal.getInstance(document.getElementById('dawisModal')).hide();
+          loadDawisList();
+          alert(result.message);
+        } else {
+          alert(result.message);
+        }
+      };
+      
+      if (dawisId) {
+        google.script.run.withSuccessHandler(callback).withFailureHandler(function(e) {
+          console.log('[v0] Update error:', e);
+          alert('Error: ' + e);
+        }).updateDawis(dawisId, data);
+      } else {
+        google.script.run.withSuccessHandler(callback).withFailureHandler(function(e) {
+          console.log('[v0] Create error:', e);
+          alert('Error: ' + e);
+        }).createDawis(data);
+      }
+    }
+    
+    function deleteDawisData(dawisId) {
+      if (confirm('Apakah Anda yakin ingin menghapus Dawis ini?')) {
+        google.script.run.withSuccessHandler(function(result) {
+          alert(result.message);
+          if (result.success) loadDawisList();
+        }).deleteDawis(dawisId);
+      }
+    }
+    
+    // ===========================================
+    // RUMAH FUNCTIONS
+    // ===========================================
+    function loadRumahList() {
+      loadDawisDropdown();
+      google.script.run.withSuccessHandler(function(result) {
+        var tbody = document.getElementById('rumahTableBody');
+        if (result.success && result.data && result.data.length > 0) {
+          tbody.innerHTML = result.data.map(function(r, i) {
+            return '<tr>' +
+              '<td>' + (i + 1) + '</td>' +
+              '<td>' + r.blok + '-' + r.nomor + '</td>' +
+              '<td>' + (r.nama_dawis || '-') + '</td>' +
+              '<td><span class="badge bg-' + (r.status_rumah === 'dihuni' ? 'success' : r.status_rumah === 'kosong' ? 'secondary' : 'warning') + '">' + (r.status_rumah || 'dihuni') + '</span></td>' +
+              '<td>' + (r.jumlah_kk || 0) + '</td>' +
+              '<td>' +
+                '<button class="btn btn-sm btn-outline-primary me-1" onclick="editRumah(\'' + r.rumah_id + '\')"><i class="bi bi-pencil"></i></button>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="deleteRumahData(\'' + r.rumah_id + '\')"><i class="bi bi-trash"></i></button>' +
+              '</td>' +
+            '</tr>';
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">Tidak ada data</td></tr>';
+        }
+      }).getRumahList();
+    }
+    
+    function loadDawisDropdown() {
+      google.script.run.withSuccessHandler(function(result) {
+        var select = document.getElementById('rumah_dawis_id');
+        select.innerHTML = '<option value="">Pilih Dawis</option>';
+        if (result.success && result.data) {
+          result.data.forEach(function(d) {
+            select.innerHTML += '<option value="' + d.value + '">' + d.label + '</option>';
+          });
+        }
+      }).getDawisDropdown();
+    }
+    
+    function showRumahModal(data) {
+      document.getElementById('rumahForm').reset();
+      document.getElementById('rumah_id').value = data ? data.rumah_id : '';
+      document.getElementById('rumahModalTitle').textContent = data ? 'Edit Rumah' : 'Tambah Rumah';
+      loadDawisDropdown();
+      
+      if (data) {
+        setTimeout(function() {
+          document.getElementById('rumah_dawis_id').value = data.dawis_id || '';
+        }, 200);
+        document.getElementById('rumah_blok').value = data.blok || '';
+        document.getElementById('rumah_nomor').value = data.nomor || '';
+        document.getElementById('rumah_alamat').value = data.alamat || '';
+        document.getElementById('rumah_status').value = data.status_rumah || 'dihuni';
+      }
+      
+      new bootstrap.Modal(document.getElementById('rumahModal')).show();
+    }
+    
+    function editRumah(rumahId) {
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          showRumahModal(result.data);
+        } else {
+          alert(result.message);
+        }
+      }).getRumahById(rumahId);
+    }
+    
+    function saveRumah() {
+      var rumahId = document.getElementById('rumah_id').value;
+      var data = {
+        dawis_id: document.getElementById('rumah_dawis_id').value,
+        blok: document.getElementById('rumah_blok').value,
+        nomor: document.getElementById('rumah_nomor').value,
+        alamat: document.getElementById('rumah_alamat').value,
+        status_rumah: document.getElementById('rumah_status').value
+      };
+      
+      var callback = function(result) {
+        if (result.success) {
+          bootstrap.Modal.getInstance(document.getElementById('rumahModal')).hide();
+          loadRumahList();
+          alert(result.message);
+        } else {
+          alert(result.message);
+        }
+      };
+      
+      if (rumahId) {
+        google.script.run.withSuccessHandler(callback).updateRumah(rumahId, data);
+      } else {
+        google.script.run.withSuccessHandler(callback).createRumah(data);
+      }
+    }
+    
+    function deleteRumahData(rumahId) {
+      if (confirm('Apakah Anda yakin ingin menghapus Rumah ini?')) {
+        google.script.run.withSuccessHandler(function(result) {
+          alert(result.message);
+          if (result.success) loadRumahList();
+        }).deleteRumah(rumahId);
+      }
+    }
+    
+    // ===========================================
+    // KK FUNCTIONS
+    // ===========================================
+    function loadKKList() {
+      loadRumahDropdown();
+      google.script.run.withSuccessHandler(function(result) {
+        var tbody = document.getElementById('kkTableBody');
+        if (result.success && result.data && result.data.length > 0) {
+          tbody.innerHTML = result.data.map(function(k, i) {
+            return '<tr>' +
+              '<td>' + (i + 1) + '</td>' +
+              '<td>' + k.no_kk + '</td>' +
+              '<td>' + (k.kepala_keluarga || '-') + '</td>' +
+              '<td>' + (k.alamat_rumah || '-') + '</td>' +
+              '<td>' + (k.jumlah_warga || 0) + '</td>' +
+              '<td>' +
+                '<button class="btn btn-sm btn-outline-primary me-1" onclick="editKK(\'' + k.kk_id + '\')"><i class="bi bi-pencil"></i></button>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="deleteKKData(\'' + k.kk_id + '\')"><i class="bi bi-trash"></i></button>' +
+              '</td>' +
+            '</tr>';
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-3 text-muted">Tidak ada data</td></tr>';
+        }
+      }).getKKList();
+    }
+    
+    function loadRumahDropdown() {
+      google.script.run.withSuccessHandler(function(result) {
+        var select = document.getElementById('kk_rumah_id');
+        select.innerHTML = '<option value="">Pilih Rumah</option>';
+        if (result.success && result.data) {
+          result.data.forEach(function(r) {
+            select.innerHTML += '<option value="' + r.value + '">' + r.label + '</option>';
+          });
+        }
+      }).getRumahDropdown();
+    }
+    
+    function showKKModal(data) {
+      document.getElementById('kkForm').reset();
+      document.getElementById('kk_id').value = data ? data.kk_id : '';
+      document.getElementById('kkModalTitle').textContent = data ? 'Edit KK' : 'Tambah Kartu Keluarga';
+      loadRumahDropdown();
+      
+      if (data) {
+        setTimeout(function() {
+          document.getElementById('kk_rumah_id').value = data.rumah_id || '';
+        }, 200);
+        document.getElementById('no_kk').value = data.no_kk || '';
+        document.getElementById('kepala_keluarga').value = data.kepala_keluarga || '';
+        document.getElementById('kk_status_tinggal').value = data.status_tinggal || 'tetap';
+      }
+      
+      new bootstrap.Modal(document.getElementById('kkModal')).show();
+    }
+    
+    function editKK(kkId) {
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          showKKModal(result.data);
+        } else {
+          alert(result.message);
+        }
+      }).getKKById(kkId);
+    }
+    
+    function saveKK() {
+      var kkId = document.getElementById('kk_id').value;
+      var data = {
+        rumah_id: document.getElementById('kk_rumah_id').value,
+        no_kk: document.getElementById('no_kk').value,
+        kepala_keluarga: document.getElementById('kepala_keluarga').value,
+        status_tinggal: document.getElementById('kk_status_tinggal').value
+      };
+      
+      var callback = function(result) {
+        if (result.success) {
+          bootstrap.Modal.getInstance(document.getElementById('kkModal')).hide();
+          loadKKList();
+          alert(result.message);
+        } else {
+          alert(result.message);
+        }
+      };
+      
+      if (kkId) {
+        google.script.run.withSuccessHandler(callback).updateKK(kkId, data);
+      } else {
+        google.script.run.withSuccessHandler(callback).createKK(data);
+      }
+    }
+    
+    function deleteKKData(kkId) {
+      if (confirm('Apakah Anda yakin ingin menghapus KK ini?')) {
+        google.script.run.withSuccessHandler(function(result) {
+          alert(result.message);
+          if (result.success) loadKKList();
+        }).deleteKK(kkId);
+      }
+    }
+    
+    // ===========================================
+    // WARGA FUNCTIONS
+    // ===========================================
+    function loadWargaList() {
+      loadKKDropdown();
+      google.script.run.withSuccessHandler(function(result) {
+        var tbody = document.getElementById('wargaTableBody');
+        if (result.success && result.data && result.data.length > 0) {
+          tbody.innerHTML = result.data.map(function(w, i) {
+            return '<tr>' +
+              '<td>' + (i + 1) + '</td>' +
+              '<td>' + w.nik + '</td>' +
+              '<td>' + w.nama + '</td>' +
+              '<td>' + (w.jenis_kelamin || '-') + '</td>' +
+              '<td>' + (w.no_kk || '-') + '</td>' +
+              '<td><span class="badge bg-' + (w.status_warga === 'tetap' ? 'success' : 'warning') + '">' + (w.status_warga || 'tetap') + '</span></td>' +
+              '<td>' +
+                '<button class="btn btn-sm btn-outline-primary me-1" onclick="editWarga(\'' + w.warga_id + '\')"><i class="bi bi-pencil"></i></button>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="deleteWargaData(\'' + w.warga_id + '\')"><i class="bi bi-trash"></i></button>' +
+              '</td>' +
+            '</tr>';
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-3 text-muted">Tidak ada data</td></tr>';
+        }
+      }).getWargaList();
+    }
+    
+    function loadKKDropdown() {
+      google.script.run.withSuccessHandler(function(result) {
+        var select = document.getElementById('warga_kk_id');
+        select.innerHTML = '<option value="">Pilih KK</option>';
+        if (result.success && result.data) {
+          result.data.forEach(function(k) {
+            select.innerHTML += '<option value="' + k.value + '">' + k.label + '</option>';
+          });
+        }
+      }).getKKDropdown();
+    }
+    
+    function showWargaModal(data) {
+      document.getElementById('wargaForm').reset();
+      document.getElementById('warga_id').value = data ? data.warga_id : '';
+      document.getElementById('wargaModalTitle').textContent = data ? 'Edit Warga' : 'Tambah Warga';
+      loadKKDropdown();
+      
+      if (data) {
+        setTimeout(function() {
+          document.getElementById('warga_kk_id').value = data.kk_id || '';
+        }, 200);
+        document.getElementById('warga_nik').value = data.nik || '';
+        document.getElementById('warga_nama').value = data.nama || '';
+        document.getElementById('warga_jenis_kelamin').value = data.jenis_kelamin || 'L';
+        document.getElementById('warga_tempat_lahir').value = data.tempat_lahir || '';
+        document.getElementById('warga_tanggal_lahir').value = data.tanggal_lahir || '';
+        document.getElementById('warga_agama').value = data.agama || 'Islam';
+        document.getElementById('warga_status_perkawinan').value = data.status_perkawinan || 'Belum Kawin';
+        document.getElementById('warga_pekerjaan').value = data.pekerjaan || '';
+        document.getElementById('warga_no_telepon').value = data.no_telepon || '';
+        document.getElementById('warga_status_dalam_kk').value = data.status_dalam_kk || 'Anggota Keluarga';
+        document.getElementById('warga_status_warga').value = data.status_warga || 'tetap';
+      }
+      
+      new bootstrap.Modal(document.getElementById('wargaModal')).show();
+    }
+    
+    function editWarga(wargaId) {
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          showWargaModal(result.data);
+        } else {
+          alert(result.message);
+        }
+      }).getWargaById(wargaId);
+    }
+    
+    function saveWarga() {
+      var wargaId = document.getElementById('warga_id').value;
+      var data = {
+        kk_id: document.getElementById('warga_kk_id').value,
+        nik: document.getElementById('warga_nik').value,
+        nama: document.getElementById('warga_nama').value,
+        jenis_kelamin: document.getElementById('warga_jenis_kelamin').value,
+        tempat_lahir: document.getElementById('warga_tempat_lahir').value,
+        tanggal_lahir: document.getElementById('warga_tanggal_lahir').value,
+        agama: document.getElementById('warga_agama').value,
+        status_perkawinan: document.getElementById('warga_status_perkawinan').value,
+        pekerjaan: document.getElementById('warga_pekerjaan').value,
+        no_telepon: document.getElementById('warga_no_telepon').value,
+        status_dalam_kk: document.getElementById('warga_status_dalam_kk').value,
+        status_warga: document.getElementById('warga_status_warga').value
+      };
+      
+      var callback = function(result) {
+        if (result.success) {
+          bootstrap.Modal.getInstance(document.getElementById('wargaModal')).hide();
+          loadWargaList();
+          alert(result.message);
+        } else {
+          alert(result.message);
+        }
+      };
+      
+      if (wargaId) {
+        google.script.run.withSuccessHandler(callback).updateWarga(wargaId, data);
+      } else {
+        google.script.run.withSuccessHandler(callback).createWarga(data);
+      }
+    }
+    
+    function deleteWargaData(wargaId) {
+      if (confirm('Apakah Anda yakin ingin menghapus Warga ini?')) {
+        google.script.run.withSuccessHandler(function(result) {
+          alert(result.message);
+          if (result.success) loadWargaList();
+        }).deleteWarga(wargaId);
+      }
+    }
+    
+    function searchWargaData(query) {
+      google.script.run.withSuccessHandler(function(result) {
+        var tbody = document.getElementById('wargaTableBody');
+        if (result.success && result.data && result.data.length > 0) {
+          tbody.innerHTML = result.data.map(function(w, i) {
+            return '<tr>' +
+              '<td>' + (i + 1) + '</td>' +
+              '<td>' + w.nik + '</td>' +
+              '<td>' + w.nama + '</td>' +
+              '<td>' + (w.jenis_kelamin || '-') + '</td>' +
+              '<td>' + (w.no_kk || '-') + '</td>' +
+              '<td><span class="badge bg-' + (w.status_warga === 'tetap' ? 'success' : 'warning') + '">' + (w.status_warga || 'tetap') + '</span></td>' +
+              '<td>' +
+                '<button class="btn btn-sm btn-outline-primary me-1" onclick="editWarga(\'' + w.warga_id + '\')"><i class="bi bi-pencil"></i></button>' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="deleteWargaData(\'' + w.warga_id + '\')"><i class="bi bi-trash"></i></button>' +
+              '</td>' +
+            '</tr>';
+          }).join('');
+        } else {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-3 text-muted">Tidak ada data ditemukan</td></tr>';
+        }
+      }).searchWarga(query);
+    }
+  </script>
+</body>
+</html>

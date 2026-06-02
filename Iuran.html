@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Iuran - SIRT</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+  <?!= include('Styles') ?>
+  <script>var CURRENT_PAGE = 'Iuran';</script>
+</head>
+<body>
+  <div class="app-container">
+    <?!= include('Layout') ?>
+    
+    <main class="main-content">
+      <div class="content-header">
+        <h1 class="h3 mb-0">Manajemen Iuran</h1>
+        <p class="text-muted mb-0">Kelola jenis iuran, tagihan, dan pembayaran warga</p>
+      </div>
+      
+      <!-- Dashboard Cards -->
+      <div class="row g-3 mb-4" id="dashboardCards">
+        <div class="col-md-3">
+          <div class="card bg-primary text-white">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="card-subtitle mb-2">Total Tagihan</h6>
+                  <h3 class="mb-0" id="totalTagihan">0</h3>
+                </div>
+                <i class="bi bi-receipt fs-1 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-warning text-dark">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="card-subtitle mb-2">Belum Bayar</h6>
+                  <h3 class="mb-0" id="belumBayar">0</h3>
+                </div>
+                <i class="bi bi-exclamation-circle fs-1 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-success text-white">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="card-subtitle mb-2">Lunas</h6>
+                  <h3 class="mb-0" id="lunas">0</h3>
+                </div>
+                <i class="bi bi-check-circle fs-1 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card bg-info text-white">
+            <div class="card-body">
+              <div class="d-flex justify-content-between">
+                <div>
+                  <h6 class="card-subtitle mb-2">Total Terbayar</h6>
+                  <h3 class="mb-0" id="totalTerbayar">Rp 0</h3>
+                </div>
+                <i class="bi bi-cash-stack fs-1 opacity-50"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Periode Filter -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <label class="form-label">Periode</label>
+              <input type="month" class="form-control" id="filterPeriode">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">&nbsp;</label>
+              <button class="btn btn-primary d-block" onclick="applyPeriodeFilter()">
+                <i class="bi bi-filter"></i> Filter
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" id="iuranTabs" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tabJenisIuran">
+            <i class="bi bi-tags"></i> Jenis Iuran
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabTagihan">
+            <i class="bi bi-receipt"></i> Tagihan
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tabPembayaran">
+            <i class="bi bi-cash-coin"></i> Pembayaran
+          </button>
+        </li>
+      </ul>
+      
+      <div class="tab-content bg-white border border-top-0 rounded-bottom p-3">
+        <!-- Tab Jenis Iuran -->
+        <div class="tab-pane fade show active" id="tabJenisIuran">
+          <div class="d-flex justify-content-between mb-3">
+            <h5>Daftar Jenis Iuran</h5>
+            <button class="btn btn-primary" onclick="showJenisIuranModal()">
+              <i class="bi bi-plus"></i> Tambah Jenis Iuran
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>No</th>
+                  <th>Nama Iuran</th>
+                  <th>Nominal</th>
+                  <th>Deskripsi</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="jenisIuranTable">
+                <tr><td colspan="6" class="text-center">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Tab Tagihan -->
+        <div class="tab-pane fade" id="tabTagihan">
+          <div class="d-flex justify-content-between mb-3">
+            <h5>Daftar Tagihan</h5>
+            <div>
+              <button class="btn btn-success me-2" onclick="showGenerateTagihanModal()">
+                <i class="bi bi-magic"></i> Generate Tagihan
+              </button>
+              <button class="btn btn-primary" onclick="showTagihanModal()">
+                <i class="bi bi-plus"></i> Tambah Tagihan
+              </button>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>No</th>
+                  <th>No KK</th>
+                  <th>Kepala Keluarga</th>
+                  <th>Jenis Iuran</th>
+                  <th>Periode</th>
+                  <th>Nominal</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tagihanTable">
+                <tr><td colspan="8" class="text-center">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <!-- Tab Pembayaran -->
+        <div class="tab-pane fade" id="tabPembayaran">
+          <div class="d-flex justify-content-between mb-3">
+            <h5>Daftar Pembayaran</h5>
+            <button class="btn btn-primary" onclick="showPembayaranModal()">
+              <i class="bi bi-plus"></i> Catat Pembayaran
+            </button>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead class="table-dark">
+                <tr>
+                  <th>No</th>
+                  <th>Tanggal</th>
+                  <th>No KK</th>
+                  <th>Kepala Keluarga</th>
+                  <th>Jenis Iuran</th>
+                  <th>Periode</th>
+                  <th>Jumlah</th>
+                  <th>Metode</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="pembayaranTable">
+                <tr><td colspan="9" class="text-center">Memuat data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Modal Jenis Iuran -->
+  <div class="modal fade" id="jenisIuranModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="jenisIuranModalTitle">Tambah Jenis Iuran</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="jenisIuranForm">
+            <input type="hidden" id="jenisIuranId">
+            <div class="mb-3">
+              <label class="form-label">Nama Iuran <span class="text-danger">*</span></label>
+              <input type="text" class="form-control" id="jenisIuranNama" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nominal (Rp) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="jenisIuranNominal" min="0" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Deskripsi</label>
+              <textarea class="form-control" id="jenisIuranDeskripsi" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="jenisIuranActive" checked>
+                <label class="form-check-label">Aktif</label>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="saveJenisIuran()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Generate Tagihan -->
+  <div class="modal fade" id="generateTagihanModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Generate Tagihan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="generateTagihanForm">
+            <div class="mb-3">
+              <label class="form-label">Jenis Iuran <span class="text-danger">*</span></label>
+              <select class="form-select" id="generateJenisIuran" required>
+                <option value="">-- Pilih Jenis Iuran --</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Periode <span class="text-danger">*</span></label>
+              <input type="month" class="form-control" id="generatePeriode" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tanggal Jatuh Tempo</label>
+              <input type="date" class="form-control" id="generateJatuhTempo">
+            </div>
+            <div class="alert alert-info">
+              <i class="bi bi-info-circle"></i> Tagihan akan digenerate untuk semua KK yang terdaftar.
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-success" onclick="generateTagihan()">Generate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Tagihan -->
+  <div class="modal fade" id="tagihanModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Tambah Tagihan</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="tagihanForm">
+            <div class="mb-3">
+              <label class="form-label">KK <span class="text-danger">*</span></label>
+              <select class="form-select" id="tagihanKK" required>
+                <option value="">-- Pilih KK --</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Jenis Iuran <span class="text-danger">*</span></label>
+              <select class="form-select" id="tagihanJenisIuran" required>
+                <option value="">-- Pilih Jenis Iuran --</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Periode <span class="text-danger">*</span></label>
+              <input type="month" class="form-control" id="tagihanPeriode" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nominal (Rp)</label>
+              <input type="number" class="form-control" id="tagihanNominal" min="0">
+              <small class="text-muted">Kosongkan untuk menggunakan nominal default</small>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="saveTagihan()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Modal Pembayaran -->
+  <div class="modal fade" id="pembayaranModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Catat Pembayaran</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="pembayaranForm">
+            <div class="mb-3">
+              <label class="form-label">Tagihan <span class="text-danger">*</span></label>
+              <select class="form-select" id="pembayaranTagihan" required>
+                <option value="">-- Pilih Tagihan --</option>
+              </select>
+            </div>
+            <div class="mb-3" id="tagihanInfo" style="display: none;">
+              <div class="alert alert-secondary">
+                <strong>Info Tagihan:</strong><br>
+                <span id="tagihanInfoText"></span>
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Tanggal Bayar <span class="text-danger">*</span></label>
+              <input type="date" class="form-control" id="pembayaranTanggal" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Jumlah (Rp) <span class="text-danger">*</span></label>
+              <input type="number" class="form-control" id="pembayaranJumlah" min="0" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Metode Pembayaran</label>
+              <select class="form-select" id="pembayaranMetode">
+                <option value="TUNAI">Tunai</option>
+                <option value="TRANSFER">Transfer</option>
+                <option value="QRIS">QRIS</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Keterangan</label>
+              <textarea class="form-control" id="pembayaranKeterangan" rows="2"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="savePembayaran()">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <?!= include('Scripts') ?>
+  <script>
+    var jenisIuranData = [];
+    var tagihanData = [];
+    var pembayaranData = [];
+    var kkData = [];
+    var currentPeriode = '';
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      // Set default periode to current month
+      var now = new Date();
+      var defaultPeriode = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+      document.getElementById('filterPeriode').value = defaultPeriode;
+      currentPeriode = defaultPeriode;
+      
+      loadAllData();
+    });
+    
+    function loadAllData() {
+      loadDashboard();
+      loadJenisIuran();
+      loadTagihan();
+      loadPembayaran();
+      loadKKList();
+    }
+    
+    function applyPeriodeFilter() {
+      currentPeriode = document.getElementById('filterPeriode').value;
+      loadDashboard();
+      loadTagihan();
+      loadPembayaran();
+    }
+    
+    // Dashboard
+    function loadDashboard() {
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          var data = result.data;
+          document.getElementById('totalTagihan').textContent = data.totalTagihan;
+          document.getElementById('belumBayar').textContent = data.belumBayar;
+          document.getElementById('lunas').textContent = data.lunas;
+          document.getElementById('totalTerbayar').textContent = 'Rp ' + formatNumber(data.totalTerbayar);
+        }
+      }).withFailureHandler(handleError).getIuranDashboardData(currentPeriode);
+    }
+    
+    // Jenis Iuran
+    function loadJenisIuran() {
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          jenisIuranData = result.data;
+          renderJenisIuranTable();
+          populateJenisIuranSelects();
+        }
+      }).withFailureHandler(handleError).getJenisIuranList();
+    }
+    
+    function renderJenisIuranTable() {
+      var tbody = document.getElementById('jenisIuranTable');
+      if (jenisIuranData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Belum ada data jenis iuran</td></tr>';
+        return;
+      }
+      
+      var html = jenisIuranData.map(function(item, index) {
+        var statusBadge = item.is_active 
+          ? '<span class="badge bg-success">Aktif</span>'
+          : '<span class="badge bg-secondary">Nonaktif</span>';
+        return '<tr>' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td>' + escapeHtml(item.nama) + '</td>' +
+          '<td>Rp ' + formatNumber(item.nominal) + '</td>' +
+          '<td>' + escapeHtml(item.deskripsi || '-') + '</td>' +
+          '<td>' + statusBadge + '</td>' +
+          '<td>' +
+            '<button class="btn btn-sm btn-warning me-1" onclick="editJenisIuran(\'' + item.jenis_iuran_id + '\')">' +
+              '<i class="bi bi-pencil"></i>' +
+            '</button>' +
+            '<button class="btn btn-sm btn-danger" onclick="confirmDeleteJenisIuran(\'' + item.jenis_iuran_id + '\')">' +
+              '<i class="bi bi-trash"></i>' +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+      
+      tbody.innerHTML = html;
+    }
+    
+    function populateJenisIuranSelects() {
+      var activeItems = jenisIuranData.filter(function(item) { return item.is_active; });
+      var options = '<option value="">-- Pilih Jenis Iuran --</option>' +
+        activeItems.map(function(item) {
+          return '<option value="' + item.jenis_iuran_id + '">' + escapeHtml(item.nama) + ' (Rp ' + formatNumber(item.nominal) + ')</option>';
+        }).join('');
+      
+      document.getElementById('generateJenisIuran').innerHTML = options;
+      document.getElementById('tagihanJenisIuran').innerHTML = options;
+    }
+    
+    function showJenisIuranModal(id) {
+      document.getElementById('jenisIuranForm').reset();
+      document.getElementById('jenisIuranId').value = '';
+      document.getElementById('jenisIuranModalTitle').textContent = 'Tambah Jenis Iuran';
+      document.getElementById('jenisIuranActive').checked = true;
+      new bootstrap.Modal(document.getElementById('jenisIuranModal')).show();
+    }
+    
+    function editJenisIuran(id) {
+      var item = jenisIuranData.find(function(i) { return i.jenis_iuran_id === id; });
+      if (!item) return;
+      
+      document.getElementById('jenisIuranId').value = item.jenis_iuran_id;
+      document.getElementById('jenisIuranNama').value = item.nama;
+      document.getElementById('jenisIuranNominal').value = item.nominal;
+      document.getElementById('jenisIuranDeskripsi').value = item.deskripsi || '';
+      document.getElementById('jenisIuranActive').checked = item.is_active;
+      document.getElementById('jenisIuranModalTitle').textContent = 'Edit Jenis Iuran';
+      
+      new bootstrap.Modal(document.getElementById('jenisIuranModal')).show();
+    }
+    
+    function saveJenisIuran() {
+      var id = document.getElementById('jenisIuranId').value;
+      var data = {
+        nama: document.getElementById('jenisIuranNama').value.trim(),
+        nominal: document.getElementById('jenisIuranNominal').value,
+        deskripsi: document.getElementById('jenisIuranDeskripsi').value.trim().replace(/\n/g, ' '),
+        is_active: document.getElementById('jenisIuranActive').checked
+      };
+      
+      var callback = function(result) {
+        if (result.success) {
+          bootstrap.Modal.getInstance(document.getElementById('jenisIuranModal')).hide();
+          showAlert('success', result.message);
+          loadJenisIuran();
+        } else {
+          showAlert('danger', result.message);
+        }
+      };
+      
+      if (id) {
+        google.script.run.withSuccessHandler(callback).withFailureHandler(handleError).updateJenisIuran(id, data);
+      } else {
+        google.script.run.withSuccessHandler(callback).withFailureHandler(handleError).createJenisIuran(data);
+      }
+    }
+    
+    function confirmDeleteJenisIuran(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus jenis iuran ini?')) return;
+      
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          showAlert('success', result.message);
+          loadJenisIuran();
+        } else {
+          showAlert('danger', result.message);
+        }
+      }).withFailureHandler(handleError).deleteJenisIuran(id);
+    }
+    
+    // Tagihan
+    function loadTagihan() {
+      var filters = currentPeriode ? { periode: currentPeriode } : {};
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          tagihanData = result.data;
+          renderTagihanTable();
+          populateTagihanSelect();
+        }
+      }).withFailureHandler(handleError).getTagihanList(filters);
+    }
+    
+    function renderTagihanTable() {
+      var tbody = document.getElementById('tagihanTable');
+      if (tagihanData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">Belum ada data tagihan</td></tr>';
+        return;
+      }
+      
+      var html = tagihanData.map(function(item, index) {
+        var statusBadge = {
+          'BELUM_BAYAR': '<span class="badge bg-danger">Belum Bayar</span>',
+          'SEBAGIAN': '<span class="badge bg-warning">Sebagian</span>',
+          'LUNAS': '<span class="badge bg-success">Lunas</span>'
+        }[item.status] || '<span class="badge bg-secondary">' + item.status + '</span>';
+        
+        return '<tr>' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td>' + escapeHtml(item.no_kk) + '</td>' +
+          '<td>' + escapeHtml(item.kepala_keluarga) + '</td>' +
+          '<td>' + escapeHtml(item.jenis_iuran_nama) + '</td>' +
+          '<td>' + item.periode + '</td>' +
+          '<td>Rp ' + formatNumber(item.nominal) + '</td>' +
+          '<td>' + statusBadge + '</td>' +
+          '<td>' +
+            '<button class="btn btn-sm btn-success me-1" onclick="bayarTagihan(\'' + item.tagihan_id + '\')" ' + (item.status === 'LUNAS' ? 'disabled' : '') + '>' +
+              '<i class="bi bi-cash"></i>' +
+            '</button>' +
+            '<button class="btn btn-sm btn-danger" onclick="confirmDeleteTagihan(\'' + item.tagihan_id + '\')">' +
+              '<i class="bi bi-trash"></i>' +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+      
+      tbody.innerHTML = html;
+    }
+    
+    function populateTagihanSelect() {
+      var unpaid = tagihanData.filter(function(item) { return item.status !== 'LUNAS'; });
+      var options = '<option value="">-- Pilih Tagihan --</option>' +
+        unpaid.map(function(item) {
+          return '<option value="' + item.tagihan_id + '" data-nominal="' + item.nominal + '">' + 
+            escapeHtml(item.kepala_keluarga) + ' - ' + escapeHtml(item.jenis_iuran_nama) + ' (' + item.periode + ') - Rp ' + formatNumber(item.nominal) +
+          '</option>';
+        }).join('');
+      
+      document.getElementById('pembayaranTagihan').innerHTML = options;
+    }
+    
+    function showGenerateTagihanModal() {
+      document.getElementById('generateTagihanForm').reset();
+      document.getElementById('generatePeriode').value = currentPeriode;
+      new bootstrap.Modal(document.getElementById('generateTagihanModal')).show();
+    }
+    
+    function generateTagihan() {
+      var jenisIuranId = document.getElementById('generateJenisIuran').value;
+      var periode = document.getElementById('generatePeriode').value;
+      var jatuhTempo = document.getElementById('generateJatuhTempo').value;
+      
+      if (!jenisIuranId || !periode) {
+        showAlert('warning', 'Jenis iuran dan periode wajib diisi');
+        return;
+      }
+      
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          bootstrap.Modal.getInstance(document.getElementById('generateTagihanModal')).hide();
+          showAlert('success', result.message);
+          loadTagihan();
+          loadDashboard();
+        } else {
+          showAlert('danger', result.message);
+        }
+      }).withFailureHandler(handleError).generateTagihanBatch(jenisIuranId, periode, jatuhTempo);
+    }
+    
+    function showTagihanModal() {
+      document.getElementById('tagihanForm').reset();
+      document.getElementById('tagihanPeriode').value = currentPeriode;
+      new bootstrap.Modal(document.getElementById('tagihanModal')).show();
+    }
+    
+    function saveTagihan() {
+      var data = {
+        kk_id: document.getElementById('tagihanKK').value,
+        jenis_iuran_id: document.getElementById('tagihanJenisIuran').value,
+        periode: document.getElementById('tagihanPeriode').value,
+        nominal: document.getElementById('tagihanNominal').value
+      };
+      
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          bootstrap.Modal.getInstance(document.getElementById('tagihanModal')).hide();
+          showAlert('success', result.message);
+          loadTagihan();
+          loadDashboard();
+        } else {
+          showAlert('danger', result.message);
+        }
+      }).withFailureHandler(handleError).createTagihan(data);
+    }
+    
+    function confirmDeleteTagihan(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus tagihan ini?')) return;
+      
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          showAlert('success', result.message);
+          loadTagihan();
+          loadDashboard();
+        } else {
+          showAlert('danger', result.message);
+        }
+      }).withFailureHandler(handleError).deleteTagihan(id);
+    }
+    
+    function bayarTagihan(tagihanId) {
+      document.getElementById('pembayaranForm').reset();
+      document.getElementById('pembayaranTagihan').value = tagihanId;
+      document.getElementById('pembayaranTanggal').value = new Date().toISOString().split('T')[0];
+      
+      // Show tagihan info
+      var tagihan = tagihanData.find(function(t) { return t.tagihan_id === tagihanId; });
+      if (tagihan) {
+        document.getElementById('tagihanInfo').style.display = 'block';
+        document.getElementById('tagihanInfoText').innerHTML = 
+          'KK: ' + escapeHtml(tagihan.kepala_keluarga) + '<br>' +
+          'Jenis: ' + escapeHtml(tagihan.jenis_iuran_nama) + '<br>' +
+          'Nominal: Rp ' + formatNumber(tagihan.nominal);
+        document.getElementById('pembayaranJumlah').value = tagihan.nominal;
+      }
+      
+      new bootstrap.Modal(document.getElementById('pembayaranModal')).show();
+    }
+    
+    // Pembayaran
+    function loadPembayaran() {
+      var filters = currentPeriode ? { periode: currentPeriode } : {};
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          pembayaranData = result.data;
+          renderPembayaranTable();
+        }
+      }).withFailureHandler(handleError).getPembayaranList(filters);
+    }
+    
+    function renderPembayaranTable() {
+      var tbody = document.getElementById('pembayaranTable');
+      if (pembayaranData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">Belum ada data pembayaran</td></tr>';
+        return;
+      }
+      
+      var html = pembayaranData.map(function(item, index) {
+        return '<tr>' +
+          '<td>' + (index + 1) + '</td>' +
+          '<td>' + formatDate(item.tanggal_bayar) + '</td>' +
+          '<td>' + escapeHtml(item.no_kk) + '</td>' +
+          '<td>' + escapeHtml(item.kepala_keluarga) + '</td>' +
+          '<td>' + escapeHtml(item.jenis_iuran) + '</td>' +
+          '<td>' + item.periode + '</td>' +
+          '<td>Rp ' + formatNumber(item.jumlah) + '</td>' +
+          '<td>' + escapeHtml(item.metode_bayar) + '</td>' +
+          '<td>' +
+            '<button class="btn btn-sm btn-danger" onclick="confirmDeletePembayaran(\'' + item.pembayaran_id + '\')">' +
+              '<i class="bi bi-trash"></i>' +
+            '</button>' +
+          '</td>' +
+        '</tr>';
+      }).join('');
+      
+      tbody.innerHTML = html;
+    }
+    
+    function showPembayaranModal() {
+      document.getElementById('pembayaranForm').reset();
+      document.getElementById('pembayaranTanggal').value = new Date().toISOString().split('T')[0];
+      document.getElementById('tagihanInfo').style.display = 'none';
+      new bootstrap.Modal(document.getElementById('pembayaranModal')).show();
+    }
+    
+    function savePembayaran() {
+      var data = {
+        tagihan_id: document.getElementById('pembayaranTagihan').value,
+        tanggal_bayar: document.getElementById('pembayaranTanggal').value,
+        jumlah: document.getElementById('pembayaranJumlah').value,
+        metode_bayar: document.getElementById('pembayaranMetode').value,
+        keterangan: document.getElementById('pembayaranKeterangan').value
+      };
+      
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          bootstrap.Modal.getInstance(document.getElementById('pembayaranModal')).hide();
+          showAlert('success', result.message);
+          loadPembayaran();
+          loadTagihan();
+          loadDashboard();
+        } else {
+          showAlert('danger', result.message);
+        }
+      }).withFailureHandler(handleError).createPembayaran(data);
+    }
+    
+    function confirmDeletePembayaran(id) {
+      if (!confirm('Apakah Anda yakin ingin menghapus pembayaran ini?')) return;
+      
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          showAlert('success', result.message);
+          loadPembayaran();
+          loadTagihan();
+          loadDashboard();
+        } else {
+          showAlert('danger', result.message);
+        }
+      }).withFailureHandler(handleError).deletePembayaran(id);
+    }
+    
+    // Load KK list for dropdown
+    function loadKKList() {
+      google.script.run.withSuccessHandler(function(result) {
+        if (result.success) {
+          kkData = result.data;
+          var options = '<option value="">-- Pilih KK --</option>' +
+            kkData.map(function(item) {
+              return '<option value="' + item.kk_id + '">' + escapeHtml(item.no_kk) + ' - ' + escapeHtml(item.kepala_keluarga) + '</option>';
+            }).join('');
+          document.getElementById('tagihanKK').innerHTML = options;
+        }
+      }).withFailureHandler(handleError).getKKList();
+    }
+    
+    // Utility functions
+    function formatNumber(num) {
+      return (parseFloat(num) || 0).toLocaleString('id-ID');
+    }
+    
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      var d = new Date(dateStr);
+      return d.toLocaleDateString('id-ID');
+    }
+    
+    function escapeHtml(text) {
+      if (!text) return '';
+      var div = document.createElement('div');
+      div.textContent = text;
+      // Also replace newlines to prevent JS string literal errors
+      return div.innerHTML.replace(/\n/g, ' ').replace(/\r/g, '');
+    }
+    
+    function showAlert(type, message) {
+      var alertDiv = document.createElement('div');
+      alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
+      alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; max-width: 400px;';
+      alertDiv.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+      document.body.appendChild(alertDiv);
+      setTimeout(function() { alertDiv.remove(); }, 5000);
+    }
+    
+    function handleError(error) {
+      showAlert('danger', 'Error: ' + error.message);
+    }
+  </script>
+</body>
+</html>

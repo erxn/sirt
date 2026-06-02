@@ -1,0 +1,313 @@
+<!-- SIRT - JavaScript Utilities -->
+<script>
+  // =============================================================================
+  // GLOBAL VARIABLES
+  // =============================================================================
+  
+  let currentUser = null;
+  let menuItems = [];
+  
+  // =============================================================================
+  // UTILITY FUNCTIONS
+  // =============================================================================
+  
+  /**
+   * Shows loading overlay
+   */
+  function showLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+      overlay.classList.remove('hidden');
+    }
+  }
+  
+  /**
+   * Hides loading overlay
+   */
+  function hideLoading() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+      overlay.classList.add('hidden');
+    }
+  }
+  
+  /**
+   * Shows alert message
+   * @param {string} message - The message to show
+   * @param {string} type - Alert type (success, danger, warning, info)
+   * @param {string} containerId - Container element ID
+   */
+  function showAlert(message, type = 'info', containerId = 'alertContainer') {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = `
+      <div class="alert alert-${type}">
+        ${message}
+      </div>
+    `;
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+      container.innerHTML = '';
+    }, 5000);
+  }
+  
+  /**
+   * Formats date to Indonesian locale
+   * @param {string} dateString - ISO date string
+   * @returns {string} - Formatted date
+   */
+  function formatDate(dateString) {
+    if (!dateString) return '-';
+    const options = { day: '2-digit', month: 'long', year: 'numeric' };
+    return new Date(dateString).toLocaleDateString('id-ID', options);
+  }
+  
+  /**
+   * Formats currency to Indonesian Rupiah
+   * @param {number} amount - The amount
+   * @returns {string} - Formatted currency
+   */
+  function formatCurrency(amount) {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0
+    }).format(amount || 0);
+  }
+  
+  /**
+   * Gets user initials
+   * @param {string} name - User name
+   * @returns {string} - Initials
+   */
+  function getInitials(name) {
+    if (!name) return '?';
+    return name.split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
+  }
+  
+  /**
+   * Debounce function
+   * @param {Function} func - Function to debounce
+   * @param {number} wait - Wait time in ms
+   * @returns {Function} - Debounced function
+   */
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+  
+  /**
+   * Navigates to a page
+   * @param {string} page - Page name
+   */
+  function navigateTo(page) {
+    const baseUrl = google.script.run.getWebAppUrl ? 
+      '<?= ScriptApp.getService().getUrl() ?>' : 
+      window.location.href.split('?')[0];
+    window.location.href = baseUrl + '?page=' + page;
+  }
+  
+  /**
+   * Toggles dropdown menu
+   * @param {string} menuId - Menu element ID
+   */
+  function toggleDropdown(menuId) {
+    const menu = document.getElementById(menuId);
+    if (menu) {
+      menu.classList.toggle('show');
+    }
+  }
+  
+  /**
+   * Closes all dropdowns
+   */
+  function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+      menu.classList.remove('show');
+    });
+  }
+  
+  /**
+   * Toggles sidebar on mobile
+   */
+  function toggleSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+      sidebar.classList.toggle('open');
+    }
+  }
+  
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dropdown')) {
+      closeAllDropdowns();
+    }
+  });
+  
+  // =============================================================================
+  // AUTHENTICATION FUNCTIONS
+  // =============================================================================
+  
+  /**
+   * Handles login form submission
+   * @param {Event} e - Form submit event
+   */
+  function handleLogin(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const submitBtn = document.getElementById('loginBtn');
+    
+    // Validate
+    if (!email || !password) {
+      showAlert('Email dan password wajib diisi', 'danger', 'loginAlert');
+      return;
+    }
+    
+    // Disable button
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> Memproses...';
+    
+    // Call server
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          showAlert('Login berhasil! Mengalihkan...', 'success', 'loginAlert');
+          setTimeout(() => {
+            window.location.reload();
+          }, 1000);
+        } else {
+          showAlert(result.message, 'danger', 'loginAlert');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Masuk';
+        }
+      })
+      .withFailureHandler(function(error) {
+        showAlert('Terjadi kesalahan: ' + error.message, 'danger', 'loginAlert');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Masuk';
+      })
+      .login(email, password);
+  }
+  
+  /**
+   * Handles logout
+   */
+  function handleLogout() {
+    showLoading();
+    
+    google.script.run
+      .withSuccessHandler(function(result) {
+        window.location.reload();
+      })
+      .withFailureHandler(function(error) {
+        hideLoading();
+        alert('Gagal logout: ' + error.message);
+      })
+      .logout();
+  }
+  
+  // =============================================================================
+  // INITIALIZATION
+  // =============================================================================
+  
+  /**
+   * Initializes the application
+   */
+  function initApp() {
+    // Load current user
+    google.script.run
+      .withSuccessHandler(function(user) {
+        currentUser = user;
+        if (user) {
+          updateUserDisplay(user);
+        }
+      })
+      .getCurrentUser();
+    
+    // Load menu items
+    google.script.run
+      .withSuccessHandler(function(items) {
+        menuItems = items;
+        renderMenu(items);
+      })
+      .getMenuItems();
+  }
+  
+  /**
+   * Updates user display in header
+   * @param {Object} user - User object
+   */
+  function updateUserDisplay(user) {
+    const avatarEl = document.getElementById('userAvatar');
+    const nameEl = document.getElementById('userName');
+    const roleEl = document.getElementById('userRole');
+    
+    if (avatarEl) avatarEl.textContent = getInitials(user.name);
+    if (nameEl) nameEl.textContent = user.name;
+    if (roleEl) roleEl.textContent = user.role_name;
+  }
+  
+  /**
+   * Renders navigation menu
+   * @param {Object[]} items - Menu items
+   */
+  function renderMenu(items) {
+    const navContainer = document.getElementById('sidebarNav');
+    if (!navContainer) return;
+    
+    const currentPage = new URLSearchParams(window.location.search).get('page') || 'dashboard';
+    
+    let html = '';
+    items.forEach(item => {
+      const isActive = item.id === currentPage ? 'active' : '';
+      html += `
+        <div class="nav-item">
+          <a class="nav-link ${isActive}" onclick="navigateTo('${item.id}')">
+            ${getIcon(item.icon)}
+            <span>${item.label}</span>
+          </a>
+        </div>
+      `;
+    });
+    
+    navContainer.innerHTML = html;
+  }
+  
+  /**
+   * Gets SVG icon by name
+   * @param {string} name - Icon name
+   * @returns {string} - SVG HTML
+   */
+  function getIcon(name) {
+    const icons = {
+      'home': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>',
+      'users': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>',
+      'map': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>',
+      'credit-card': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>',
+      'dollar-sign': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+      'mail': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
+      'bell': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>',
+      'file-text': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+      'settings': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
+      'logout': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>',
+      'user': '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>'
+    };
+    
+    return icons[name] || icons['home'];
+  }
+</script>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIRT - Sistem Informasi RT</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+  <?!= include('Styles') ?>
+</head>
+<body>
+  <div id="app" class="login-container">
+    <div class="login-box">
+      <div class="login-header">
+        <h1><i class="bi bi-house-heart"></i> SIRT</h1>
+        <p>Sistem Informasi RT</p>
+      </div>
+      <form id="loginForm">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email</label>
+          <input type="email" class="form-control" id="email" name="email" required>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <div id="errorMsg" class="alert alert-danger d-none" role="alert"></div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+      </form>
+      <div class="login-footer">
+        <small>Demo: admin@sirt.local / admin123</small>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <?!= include('Scripts') ?>
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const errorMsg = document.getElementById('errorMsg');
+      
+      google.script.run.withSuccessHandler(function(result) {
+        console.log('[v0] Login result:', result);
+        if (result.success) {
+          // Redirect using top window location
+          var url = '<?= ScriptApp.getService().getUrl() ?>';
+          window.top.location.href = url + '?page=Dashboard';
+        } else {
+          errorMsg.textContent = result.message;
+          errorMsg.classList.remove('d-none');
+        }
+      }).withFailureHandler(function(error) {
+        console.log('[v0] Login error:', error);
+        errorMsg.textContent = 'Server error: ' + error;
+        errorMsg.classList.remove('d-none');
+      }).login(email, password);
+    });
+  </script>
+</body>
+</html>

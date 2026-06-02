@@ -1,0 +1,97 @@
+<!-- Sidebar Navigation -->
+<div class="sidebar">
+  <div class="sidebar-header">
+    <h5 class="mb-0"><i class="bi bi-house-heart-fill"></i> SIRT</h5>
+    <small class="text-muted">Sistem Informasi RT</small>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#" data-page="Dashboard" class="nav-link">
+      <i class="bi bi-speedometer2"></i> Dashboard
+    </a>
+    <a href="#" data-page="MasterData" class="nav-link">
+      <i class="bi bi-database"></i> Master Data
+    </a>
+    <a href="#" data-page="Iuran" class="nav-link">
+      <i class="bi bi-cash-coin"></i> Iuran
+    </a>
+    <a href="#" data-page="Keuangan" class="nav-link">
+      <i class="bi bi-graph-up"></i> Keuangan
+    </a>
+    <a href="#" data-page="Surat" class="nav-link">
+      <i class="bi bi-envelope"></i> Surat Menyurat
+    </a>
+    <a href="#" data-page="Pengumuman" class="nav-link">
+      <i class="bi bi-megaphone"></i> Pengumuman
+    </a>
+    <hr class="my-2">
+    <a href="#" data-page="Users" class="nav-link">
+      <i class="bi bi-people"></i> Manajemen User
+    </a>
+    <a href="#" data-page="Settings" class="nav-link">
+      <i class="bi bi-gear"></i> Pengaturan
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="user-info mb-2">
+      <small class="text-muted">Login sebagai:</small>
+      <div class="fw-bold" id="userName">-</div>
+      <small class="badge bg-primary" id="userRole">-</small>
+    </div>
+    <button class="btn btn-outline-danger btn-sm w-100" onclick="handleLogout()">
+      <i class="bi bi-box-arrow-right"></i> Logout
+    </button>
+  </div>
+</div>
+
+<!-- Top Header (Mobile) -->
+<div class="top-header d-md-none">
+  <button class="btn btn-link" onclick="toggleSidebar()">
+    <i class="bi bi-list fs-4"></i>
+  </button>
+  <span class="fw-bold">SIRT</span>
+  <div></div>
+</div>
+
+<script>
+var BASE_URL = '';
+
+// Get base URL from server
+google.script.run.withSuccessHandler(function(url) {
+  BASE_URL = url;
+  initNavigation();
+}).getWebAppUrl();
+
+function initNavigation() {
+  // Set up navigation links
+  document.querySelectorAll('.sidebar-nav .nav-link').forEach(function(link) {
+    var page = link.getAttribute('data-page');
+    link.href = BASE_URL + '?page=' + page;
+    link.setAttribute('target', '_top');
+    
+    // Highlight active menu based on CURRENT_PAGE variable set by each page
+    if (typeof CURRENT_PAGE !== 'undefined' && page === CURRENT_PAGE) {
+      link.classList.add('active');
+    }
+  });
+}
+
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('show');
+}
+
+function handleLogout() {
+  if (confirm('Apakah Anda yakin ingin logout?')) {
+    google.script.run.withSuccessHandler(function() {
+      window.top.location.href = BASE_URL;
+    }).logout();
+  }
+}
+
+// Load user info
+google.script.run.withSuccessHandler(function(user) {
+  if (user) {
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userRole').textContent = user.role_name || user.role_id;
+  }
+}).getCurrentUserInfo();
+</script>
